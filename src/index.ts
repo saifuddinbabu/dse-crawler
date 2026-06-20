@@ -7,7 +7,7 @@ import cors from "cors";
 import {Server } from "socket.io";
 import {JSDOM} from "jsdom"
 import express from "express";
-import {normalOpenTime, saveArrayToFile, parseCustomDate} from "./Helpers"
+import {normalOpenTime, saveArrayToFile, parseCustomDate, getLatestSavedData} from "./Helpers"
 
 const app = express();
 app.use(cors());
@@ -16,7 +16,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173', // your React app's URL (Vite default)
+    origin: process.env.FRON_END_HOST, // your React app's URL (Vite default)
     methods: ['GET', 'POST'],
   },
 });
@@ -30,7 +30,22 @@ io.on('connection', (socket) => {
 });
 
 const main = async (): Promise<void> => {
-  // if(!normalOpenTime()) return;
+  if(!normalOpenTime()){
+    console.log("dse is off");
+    const fileData = await getLatestSavedData('./data');
+    if(fileData){
+      const payload = {
+            message: "Latest share price",
+            time: new Date().toISOString(),
+            data:fileData
+          };
+
+          console.log('Broadcasting:',new Date().toISOString());
+          io.emit('server_update', payload);
+    }
+    
+     return;
+  }
   const res = await axios.get("https://www.dsebd.org/latest_share_price_scroll_l.php", {
     httpsAgent: new https.Agent({ rejectUnauthorized: false })
   });

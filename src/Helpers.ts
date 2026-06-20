@@ -21,10 +21,10 @@ export const saveArrayToFile = async (dataArray:any,targetDir:string):Promise<vo
   fs.mkdirSync(targetDir, { recursive: true });
 
   // Get current time in Dhaka timezone
-  const now = moment().tz("Asia/Dhaka");
+  // const now = moment().tz("Asia/Dhaka");
 
   // Format timestamp for filename
-  const timestamp = now.format("YYYY-MM-DD_HH-mm");
+  // const timestamp = now.format("YYYY-MM-DD_HH-mm");
 
   // Build full file path
   // const filename = path.join(targetDir, `data_${timestamp}.json`);
@@ -55,4 +55,33 @@ export const parseCustomDate = (dateStr:string):Date|null=> {
   }
 
   return date; // You can also return date.getTime() for timestamp
+}
+
+export const getLatestSavedData = async(targetDir:string):Promise<any> => {
+  const filename = path.join(targetDir, `data_latest.json`);
+  // Read file synchronously
+  const rawData = fs.readFileSync(filename, "utf-8");
+
+  // Parse JSON into a variable
+  const jsonData = JSON.parse(rawData);
+  return jsonData ?? [];
+}
+
+export const formatDate =( date: Date = new Date(), format: string = "YYYY-MM-DD HH:mm:ss"): string => {
+  const pad = (n: number): string => String(n).padStart(2, "0");
+
+  const year: number = date.getFullYear();
+  const month: string = pad(date.getMonth() + 1);
+  const day: string = pad(date.getDate());
+  const hours: string = pad(date.getHours());
+  const minutes: string = pad(date.getMinutes());
+  const seconds: string = pad(date.getSeconds());
+
+  return format
+    .replace("YYYY", year.toString())
+    .replace("MM", month)
+    .replace("DD", day)
+    .replace("HH", hours)
+    .replace("mm", minutes)
+    .replace("ss", seconds);
 }

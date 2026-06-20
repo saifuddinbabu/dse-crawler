@@ -16,7 +16,7 @@ export const normalOpenTime = ():boolean =>{
   return withinTime && notWeekend;
 }
 
-export const saveArrayToFile = (dataArray:any,targetDir:string):void =>{
+export const saveArrayToFile = async (dataArray:any,targetDir:string):Promise<void> =>{
   // Ensure directory exists (create if missing)
   fs.mkdirSync(targetDir, { recursive: true });
 
@@ -27,15 +27,32 @@ export const saveArrayToFile = (dataArray:any,targetDir:string):void =>{
   const timestamp = now.format("YYYY-MM-DD_HH-mm");
 
   // Build full file path
-  const filename = path.join(targetDir, `data_${timestamp}.json`);
+  // const filename = path.join(targetDir, `data_${timestamp}.json`);
+  const filename = path.join(targetDir, `data_latest.json`);
 
   // Convert array to JSON string
   const jsonData = JSON.stringify(dataArray);
 
   // Write to file
-  fs.writeFileSync(filename, jsonData);
+  await fs.writeFileSync(filename, jsonData);
 
   console.log(`Data saved to ${filename}`);
 
   
+}
+
+export const parseCustomDate = (dateStr:string):Date|null=> {
+  // Remove the "at" for easier parsing
+  const cleaned = dateStr.replace(" at ", " ");
+  
+  // Create a Date object
+  const date = new Date(cleaned);
+  
+  // Check if parsing succeeded
+  if (isNaN(date.getTime())) {
+    return null;
+    throw new Error("Invalid date format");
+  }
+
+  return date; // You can also return date.getTime() for timestamp
 }
